@@ -27,6 +27,19 @@ Ideal for building AI-powered Q&A systems, knowledge plugins, or intelligent ass
 - **Retrieval Pipeline**: Handles indexing and querying of internal or external documents.
 - **Generation Pipeline**: Leverages an LLM to craft responses based on retrieved content.
 - **End-to-End System**: Binds both steps into a smooth workflow—document retrieval → prompt construction → AI generation → answer delivery.
+
+  ## 🛠 Tech Stack
+
+| Component              | Technology & Libraries |
+|------------------------|------------------------|
+| **Programming Language** | Python |
+| **Core RAG Framework** | [Haystack AI](https://haystack.deepset.ai/) |
+| **Vector Database** | [Pinecone](https://www.pinecone.io/) (via `pinecone-haystack`) |
+| **Web Framework / API** | [FastAPI](https://fastapi.tiangolo.com/) |
+| **Server** | [Uvicorn](https://www.uvicorn.org/) |
+| **Environment Management** | [python-dotenv](https://pypi.org/project/python-dotenv/) |
+| **Filesystem Utilities** | pathlib |
+| **Local Development Install** | `-e .` (editable mode install for package development) |
   
 ##  Getting Started
 
