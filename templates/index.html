@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hybrid RAG: Vector Semantic Search + Knowledge Graph</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --input-bg: #21262d;
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent-color: #f78166;
+            /* Orange-red like the logo in screenshot */
+            --highlight-color: #238636;
+            --code-bg: #0d1117;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            flex-grow: 1;
+            margin-bottom: 2rem;
+        }
+
+        .message {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .icon-box {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .user-icon {
+            background-color: #d73a49;
+            color: white;
+        }
+
+        .bot-icon {
+            background-color: #f0883e;
+            color: black;
+        }
+
+        .message-content {
+            flex-grow: 1;
+            padding-top: 5px;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+        .answer-text {
+            white-space: pre-wrap;
+            margin-bottom: 1rem;
+        }
+
+        .context-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .context-header {
+            padding: 0.75rem 1rem;
+            background-color: var(--input-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .context-header:hover {
+            color: white;
+        }
+
+        .context-header i.chevron {
+            transition: transform 0.2s;
+        }
+
+        .context-header.collapsed i.chevron {
+            transform: rotate(-90deg);
+        }
+
+        .context-content {
+            display: block;
+        }
+
+        .context-content.hidden {
+            display: none;
+        }
+
+        .context-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .context-item:last-child {
+            border-bottom: none;
+        }
+
+        .context-meta {
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .copy-btn:hover {
+            color: white;
+        }
+
+        .search-container {
+            position: sticky;
+            bottom: 2rem;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        input[type="text"] {
+            background: none;
+            border: none;
+            color: white;
+            flex-grow: 1;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .send-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: color 0.2s;
+        }
+
+        .send-btn:hover {
+            color: white;
+        }
+
+        .loading-dots:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+
+            0%,
+            20% {
+                content: '.';
+            }
+
+            40% {
+                content: '..';
+            }
+
+            60% {
+                content: '...';
+            }
+
+            80%,
+            100% {
+                content: '';
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        Hybrid RAG: Vector Semantic Search + Knowledge Graph
+    </div>
+
+    <div class="chat-container" id="chat-container">
+        <!-- Messages will appear here -->
+
+        <!-- Example Request (Hidden by default, shown via JS)
+        <div class="message">
+            <div class="icon-box user-icon"><i class="fab fa-reddit-alien"></i></div>
+            <div class="message-content">What is error code 501?</div>
+        </div>
+        -->
+
+        <!-- Example Response (Hidden by default)
+        <div class="message">
+            <div class="icon-box bot-icon"><i class="fas fa-robot"></i></div>
+            <div class="message-content">
+                <div class="answer-text">I cannot find this in the manual.</div>
+                <div class="context-container">
+                    <div class="context-header">
+                        <i class="fas fa-chevron-down chevron"></i> View Retrieved Context
+                    </div>
+                    <div class="context-content">
+                        <div class="context-item">
+                            <div class="context-meta">
+                                [SEMANTIC MATCH - Page 11] From the General Section...
+                                <button class="copy-btn"><i class="far fa-copy"></i></button>
+                            </div>
+                            48.5 Procedure...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        -->
+    </div>
+
+    <form class="search-container" id="qa-form">
+        <input type="text" id="question" placeholder="Describe the fault or error code..." autocomplete="off">
+        <button type="submit" class="send-btn" id="submit-btn"><i class="fas fa-paper-plane"></i></button>
+    </form>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const form = document.getElementById('qa-form');
+        const questionInput = document.getElementById('question');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const question = questionInput.value.trim();
+            if (!question) return;
+
+            // Add User Message
+            appendMessage('user', question);
+            questionInput.value = '';
+
+            // Add Loading Bot Message
+            const loadingId = appendMessage('bot', 'Processing<span class="loading-dots"></span>', true);
+
+            try {
+                const formData = new FormData();
+                formData.append('question', question);
+
+                const response = await fetch('/get_answer', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const data = await response.json(); // Now returns {answer: "...", context: [...]}
+
+                // Remove loading message
+                document.getElementById(loadingId).remove();
+
+                // Add Bot Response with Context
+                appendBotResponse(data.answer, data.context);
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById(loadingId).remove();
+                appendMessage('bot', 'Sorry, something went wrong. Please try again.');
+            }
+        });
+
+        function appendMessage(role, text, isHtml = false) {
+            const id = 'msg-' + Date.now();
+            const div = document.createElement('div');
+            div.className = 'message';
+            div.id = id;
+
+            const icon = role === 'user' ? '<i class="fab fa-reddit-alien"></i>' : '<i class="fas fa-robot"></i>';
+            const iconClass = role === 'user' ? 'user-icon' : 'bot-icon';
+
+            div.innerHTML = `
+                <div class="icon-box ${iconClass}">${icon}</div>
+                <div class="message-content">${isHtml ? text : escapeHtml(text)}</div>
+            `;
+
+            chatContainer.appendChild(div);
+            window.scrollTo(0, document.body.scrollHeight);
+            return id;
+        }
+
+        function appendBotResponse(answer, context) {
+            const div = document.createElement('div');
+            div.className = 'message';
+
+            let contextHtml = '';
+            if (context && context.length > 0) {
+                const itemsHtml = context.map(doc => {
+                    const pageInfo = doc.meta.page ? ` - Page ${doc.meta.page}` : '';
+                    const sourceInfo = doc.meta.filename || 'Unknown Source';
+                    // Limit content length for preview if needed, or show full
+                    const content = escapeHtml(doc.content);
+
+                    return `
+                        <div class="context-item">
+                            <div class="context-meta">
+                                [SEMANTIC MATCH${pageInfo}] ${sourceInfo}
+                                <button class="copy-btn" onclick="copyToClipboard('${escapeJs(doc.content)}')"><i class="far fa-copy"></i></button>
+                            </div>
+                            <div class="doc-content">${content}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                contextHtml = `
+                    <div class="context-container">
+                        <div class="context-header" onclick="toggleContext(this)">
+                            <i class="fas fa-chevron-down chevron"></i> View Retrieved Context
+                        </div>
+                        <div class="context-content">
+                            ${itemsHtml}
+                        </div>
+                    </div>
+                `;
+            }
+
+            div.innerHTML = `
+                <div class="icon-box bot-icon"><i class="fas fa-robot"></i></div>
+                <div class="message-content">
+                    <div class="answer-text">${escapeHtml(answer)}</div>
+                    ${contextHtml}
+                </div>
+            `;
+
+            chatContainer.appendChild(div);
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        function toggleContext(header) {
+            header.classList.toggle('collapsed');
+            const content = header.nextElementSibling;
+            content.classList.toggle('hidden');
+
+            const icon = header.querySelector('.chevron');
+            // CSS handles rotation
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function escapeJs(text) {
+            return text.replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+        }
+    </script>
+</body>
+
+</html>
