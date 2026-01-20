@@ -21,7 +21,7 @@ else:
 
 
 def pinecone_config(
-    index_name: str = "default",
+    index_name: str = "quickstart",
     namespace: str = "default",
     dimension: int = 768,
     metric: str = "cosine"
@@ -30,7 +30,7 @@ def pinecone_config(
     Configure and return a Pinecone document store.
     
     Args:
-        index_name: Name of the Pinecone index (default: "default")
+        index_name: Name of the Pinecone index (default: "quickstart")
         namespace: Namespace within the index (default: "default")
         dimension: Embedding dimension, should match your embedder model
                    (768 for all-mpnet-base-v2, 384 for all-MiniLM-L6-v2)
@@ -67,7 +67,7 @@ def get_environment_info() -> dict:
     """
     return {
         "pinecone_api_key_set": bool(os.getenv("PINECONE_API_KEY")),
-        "openai_api_key_set": bool(os.getenv("OPENAI_API_KEY")),
+        "groq_api_key_set": bool(os.getenv("GROQ_API_KEY")),
         "environment": os.getenv("ENVIRONMENT", "development")
     }
 
