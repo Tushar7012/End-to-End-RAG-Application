@@ -1,0 +1,48 @@
+# Sample Document for RAG Application Testing
+
+## Introduction to RAG (Retrieval-Augmented Generation)
+
+RAG (Retrieval-Augmented Generation) is a technique that combines the power of information retrieval with text generation to create more accurate and contextual responses. It works by first retrieving relevant documents from a knowledge base and then using those documents as context for generating answers.
+
+## How RAG Works
+
+1. **Query Processing**: When a user asks a question, it is first converted into a vector embedding.
+
+2. **Document Retrieval**: The query embedding is used to search a vector database (like Pinecone) to find the most relevant documents.
+
+3. **Context Building**: The retrieved documents are combined with the original question to form a prompt.
+
+4. **Answer Generation**: A Large Language Model (LLM) generates an answer based on the provided context and question.
+
+## Benefits of RAG
+
+- **Reduced Hallucinations**: By grounding the LLM's responses in actual documents, RAG reduces the likelihood of generating false information.
+
+- **Up-to-date Information**: Unlike static LLMs trained on fixed datasets, RAG can access the latest information from your document store.
+
+- **Domain Specificity**: RAG allows you to create specialized AI assistants that have deep knowledge of your specific domain.
+
+- **Source Attribution**: You can trace answers back to their source documents, improving transparency and trust.
+
+## Components Used in This Application
+
+### Haystack AI
+Haystack is an open-source framework for building production-ready LLM applications, RAG pipelines, and state-of-the-art search systems.
+
+### Pinecone
+Pinecone is a vector database that stores and indexes high-dimensional vectors for fast similarity searches.
+
+### FastAPI
+FastAPI is a modern, high-performance web framework for building APIs with Python.
+
+### OpenAI
+OpenAI's GPT models are used as the language model for generating responses based on the retrieved context.
+
+## Getting Started
+
+1. Set up your API keys in the `.env` file
+2. Ingest your documents using the ingestion pipeline
+3. Start the FastAPI server
+4. Ask questions through the web interface
+
+The system will retrieve relevant documents from your knowledge base and generate accurate, context-aware responses.
