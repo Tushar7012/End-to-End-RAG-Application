@@ -6,5 +6,5 @@ setup(
     author="Tushar",
     author_email="td220627@gmail.com",
     packages=find_packages(),
-    install_requires=["pinecone-haystack","haystack-ai","fastapi","uvicorn","python-dotenv","pathlib"]
+    install_requires=["pinecone-haystack","haystack-ai","fastapi","uvicorn","python-dotenv","pathlib","pypdf","sentence-transformers"]
 )

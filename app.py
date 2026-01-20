@@ -28,10 +28,10 @@ async def index(request: Request):
 @app.post("/get_answer")
 async def get_answer(request: Request, question: str = Form(...)):
     print(question)
-    answer= get_result(question)
-    response_data = jsonable_encoder(json.dumps({"answer": answer}))
-    res = Response(response_data)
+    result = get_result(question)
+    # result is already a dict with "answer" and "context"
+    res = Response(json.dumps(result), media_type="application/json")
     return res
     
 if __name__ == "__main__":
-    uvicorn.run("app:app",host="0.0.0.0",port=8000,reload=True)
+    uvicorn.run("app:app",host="127.0.0.1",port=8000,reload=True)
