@@ -21,6 +21,10 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
 #creating the routes with bind functions
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return Response(status_code=204)
+
 @app.get("/")
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})

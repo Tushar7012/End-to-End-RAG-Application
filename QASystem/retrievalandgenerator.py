@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 from haystack import Pipeline
 from haystack.components.embedders import SentenceTransformersTextEmbedder
 from haystack.components.builders import PromptBuilder
-from haystack.components.generators import OpenAIGenerator
+from haystack_integrations.components.generators.groq import GroqGenerator
 from haystack_integrations.components.retrievers.pinecone import PineconeEmbeddingRetriever
 
 from QASystem.utility import pinecone_config
@@ -20,10 +20,10 @@ from QASystem.utility import pinecone_config
 # Load environment variables
 load_dotenv()
 
-# Set up OpenAI API key
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if OPENAI_API_KEY:
-    os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+# Set up Groq API key
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+if GROQ_API_KEY:
+    os.environ["GROQ_API_KEY"] = GROQ_API_KEY
 
 # Define the prompt template for RAG
 RAG_PROMPT_TEMPLATE = """
@@ -45,7 +45,7 @@ Answer:
 
 def create_rag_pipeline(document_store, top_k: int = 3) -> Pipeline:
     """
-    Create a RAG (Retrieval-Augmented Generation) pipeline.
+    Create a RAG (Retrieval-Augmented Generation) pipeline using Groq.
     
     Args:
         document_store: The Pinecone document store to retrieve from.
@@ -66,8 +66,8 @@ def create_rag_pipeline(document_store, top_k: int = 3) -> Pipeline:
     
     prompt_builder = PromptBuilder(template=RAG_PROMPT_TEMPLATE)
     
-    generator = OpenAIGenerator(
-        model="gpt-3.5-turbo",
+    generator = GroqGenerator(
+        model="llama3-8b-8192",
         generation_kwargs={
             "max_tokens": 500,
             "temperature": 0.7
